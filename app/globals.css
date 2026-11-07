@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* Design tokens lấy từ simplifytrip.com hiện tại (xem artboard "Design spec") */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand: #224900;
+  --color-brand-dark: #163100;
+  --color-btn: #3f4d36;
+  --color-btn-hover: #2f3b28;
+  --color-sage: #e3ece6;
+  --color-sage-soft: #f3f7f0;
+  --color-sage-line: #d5e3cb;
+  --color-green-50: #eaf2e3;
+  --color-gold: #e3b433;
+  --color-orange: #fd7e14;
+  --color-total: #c2570c;
+  --color-ink: #141414;
+  --color-ink-2: #2b3138;
+  --color-muted: #5b6470;
+  --color-subtle: #8a929c;
+  --color-line: #e4e7eb;
+  --color-line-soft: #edeff2;
+  --color-n50: #f4f6f8;
+  --color-n25: #fafbfc;
+  --color-warn-bg: #fff8ec;
+  --color-warn-line: #f3d9a4;
+  --color-warn-ink: #7a4a00;
+  --color-tag-o-bg: #fff1e6;
+  --color-tag-o: #b4530a;
+  --color-tag-y-bg: #fbf1d3;
+  --color-tag-y: #7a5a00;
+  --color-danger: #9a3412;
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-hover: 0 8px 24px rgba(16, 24, 40, 0.12);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-white text-ink font-sans;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-st {
+    @apply mx-auto w-full max-w-[1080px] px-4 sm:px-6;
+  }
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-btn bg-btn px-5 text-[15px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-btn-hover;
+  }
+  .btn-outline {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-brand bg-white px-5 text-[15px] font-semibold whitespace-nowrap text-brand transition-colors hover:bg-green-50;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-n50 px-3.5 text-sm font-medium whitespace-nowrap text-ink transition-colors hover:bg-line;
+  }
+  .btn-sm {
+    @apply min-h-9 px-3.5 text-sm;
+  }
+  .chip {
+    @apply inline-flex min-h-9 items-center gap-1.5 rounded-md border border-line bg-white px-3.5 text-sm whitespace-nowrap text-ink transition-colors hover:border-brand hover:text-brand;
+  }
+  .chip-on {
+    @apply border-brand bg-brand text-white hover:text-white;
+  }
+  .tag {
+    @apply inline-flex h-[22px] items-center rounded px-2 text-xs font-semibold whitespace-nowrap;
+  }
+  .tag-g {
+    @apply bg-green-50 text-brand;
+  }
+  .tag-o {
+    @apply bg-tag-o-bg text-tag-o;
+  }
+  .tag-y {
+    @apply bg-tag-y-bg text-tag-y;
+  }
+  .card {
+    @apply rounded-lg bg-white shadow-card;
+  }
+  .label {
+    @apply text-xs font-semibold tracking-[0.04em] text-muted uppercase;
+  }
+  .section-title {
+    @apply text-xl font-bold tracking-[0.01em] text-brand uppercase sm:text-[22px];
+  }
+  .goldbar {
+    @apply h-[3px] w-[34px] rounded-sm bg-gold;
+  }
+  .field {
+    @apply flex min-h-11 w-full items-center gap-2 rounded-md border border-[#d9dde2] bg-white px-3 text-sm text-ink;
+  }
+  .prose-tour b,
+  .prose-tour strong {
+    @apply font-semibold text-ink;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
