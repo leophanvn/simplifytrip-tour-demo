@@ -68,7 +68,7 @@ interface NtCalendar {
   number_seat_available?: Num;
   prices?: NtPrice[];
   hotel_name?: string;
-  /** GIẢ ĐỊNH: số giờ trước khởi hành thì ngừng nhận khách (mẫu: 96). Chưa dùng – chờ hỏi đối tác */
+  /** Số giờ trước khởi hành thì ngừng nhận khách (mẫu: 96) */
   before_depart?: Num;
 }
 
@@ -84,6 +84,8 @@ interface NtTourBlock {
   hight_lights?: string;
   /** Dữ liệu thật trong tour-block để rỗng → tra tên theo category_id */
   category_name?: string;
+  /** Mã nước 2 chữ, ví dụ "TH"; thường để rỗng */
+  country?: string;
   total_day?: Num;
   total_night?: Num;
   vehicles_go?: Num;
@@ -127,6 +129,8 @@ const MAX_PAGES = 25;
 /** tour-block trả `calendars: []` → lấy lịch từng tour; tối đa bấy nhiêu lời gọi cùng lúc */
 const CALENDAR_CONCURRENCY = 6;
 const FEW_SEATS = 5;
+/** Ngừng nhận khách trước giờ khởi hành bấy nhiêu tiếng, khi lịch không có `before_depart` */
+const DEFAULT_BEFORE_DEPART_HOURS = 96;
 
 const DEPART_CITY: Record<string, string> = { "1": "TP. Hồ Chí Minh", "2": "Hà Nội", "3": "Cần Thơ" };
 /** Dữ liệu thật trả chữ (viết hoa, có dấu) */
@@ -274,8 +278,14 @@ function isoDate(v: string | undefined): string {
   return (v ?? "").slice(0, 10);
 }
 
-function todayVN(): string {
-  return new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10);
+/**
+ * Còn bán ngày khởi hành này không: từ bây giờ tới 0 giờ ngày đi (giờ Việt Nam)
+ * phải còn ít nhất `before_depart` giờ. Lịch không có trường này thì dùng 96 giờ.
+ */
+function bookable(date: string, beforeDepart: Num, now = Date.now()): boolean {
+  const hours = beforeDepart === undefined || beforeDepart === null || beforeDepart === "" ? DEFAULT_BEFORE_DEPART_HOURS : num(beforeDepart);
+  const departAt = Date.parse(`${date}T00:00:00+07:00`);
+  return Number.isFinite(departAt) && departAt - now >= hours * 3600_000;
 }
 
 function absUrl(path: string | undefined): string | undefined {
@@ -291,17 +301,22 @@ function files(x: NtFile | NtFile[] | undefined): NtFile[] {
   return Array.isArray(x) ? x : x ? [x] : [];
 }
 
+function fileUrl(f: NtFile): string | undefined {
+  // `path` của đối tác là thẻ `<a href=...>`, link thật ở `path_ext`
+  const href = f.path_ext?.trim() || f.path?.match(/href\s*=\s*['"]([^'"]+)['"]/i)?.[1];
+  return href ? absUrl(decodeEntities(href)) : f.path && !f.path.includes("<") ? absUrl(f.path) : undefined;
+}
+
+const isPdf = (url: string) => /\.pdf$/i.test(url.split(/[?#]/)[0]);
+
 /**
- * URL file chương trình tour. `path` của đối tác là thẻ `<a href=...>`, link thật ở `path_ext`.
- * GIẢ ĐỊNH: ưu tiên PDF NATURE (`file_upload_nature`), không có thì dùng `file_upload` (.docx TOP).
+ * URL file chương trình tour (Beo chọn): PDF của Top Travel (`file_upload`) trước,
+ * không có thì PDF NATURE (`file_upload_nature`), cuối cùng mới tới file khác (.docx).
  */
 function programFile(x: { file_upload?: NtFile[]; file_upload_nature?: NtFile[] }): string | undefined {
-  for (const f of [...(x.file_upload_nature ?? []), ...(x.file_upload ?? [])]) {
-    const href = f.path_ext?.trim() || f.path?.match(/href\s*=\s*['"]([^'"]+)['"]/i)?.[1];
-    const url = href ? absUrl(decodeEntities(href)) : f.path && !f.path.includes("<") ? absUrl(f.path) : undefined;
-    if (url) return url;
-  }
-  return undefined;
+  const top = (x.file_upload ?? []).map(fileUrl).filter((u): u is string => !!u);
+  const nature = (x.file_upload_nature ?? []).map(fileUrl).filter((u): u is string => !!u);
+  return top.find(isPdf) ?? nature.find(isPdf) ?? top[0] ?? nature[0];
 }
 
 function departCity(v: Num): string {
@@ -314,11 +329,163 @@ function departCity(v: Num): string {
   return s.toLocaleLowerCase("vi").replace(/(^|\s)(\S)/g, (_, sp: string, c: string) => sp + c.toLocaleUpperCase("vi"));
 }
 
-/** Tên danh mục "Tour Thái Lan" → điểm đến "Thái Lan" */
-function countryOf(b: NtTourBlock, categories: Map<string, string>): string {
-  // GIẢ ĐỊNH: danh mục chính (category_id) là quốc gia; category_sub_id có thể là thành phố nên không dùng
-  const name = (b.category_id && categories.get(b.category_id)) || b.category_name?.trim() || "";
-  return name.replace(/^tour\s+/i, "").trim() || "Tour nước ngoài";
+/* ---------------------------- Quốc gia của tour ---------------------------- */
+/*
+ * Danh mục đối tác trộn quốc gia và thành phố ("Tour Thái Lan", "Tour Phuket")
+ * và không có trường "thuộc nước nào". Bộ lọc điểm đến chỉ dùng tên quốc gia:
+ *   1. tên danh mục là quốc gia → dùng luôn
+ *   2. mã nước `country` ("TH")
+ *   3. tên nước trong tên tour ("THÁI LAN: ...", "PHUKET (THÁI LAN)", "PHÁP – THỤY SĨ – Ý")
+ *   4. tên thành phố (trong danh mục, rồi trong tên tour) → quốc gia
+ *   5. không nhận ra → giữ tên danh mục (in cảnh báo để bổ sung bảng dưới)
+ *
+ * Cách viết từ khóa: chữ không dấu (ASCII) → so với tên đã bỏ dấu, bắt được cả
+ * "THÁI LAN" lẫn "THAI LAN". Từ ngắn dễ nhầm (Ý, Úc, Mỹ, Đức, Lào...) → viết có dấu,
+ * chỉ khớp đúng chữ có dấu. Dấu "=" ở đầu: khớp đúng nguyên chữ, không bỏ dấu
+ * ("=NGA:" khớp "NGA: MOSCOW..." nhưng không khớp "NGÃ BA" hay "NGA MI SƠN").
+ */
+const COUNTRY_ALIASES: [country: string, aliases: string[]][] = [
+  ["Thái Lan", ["THAI LAN", "THAILAND"]],
+  ["Lào", ["LÀO", "LAOS"]],
+  ["Campuchia", ["CAMPUCHIA", "CAMBODIA"]],
+  ["Singapore", ["SINGAPORE"]],
+  ["Malaysia", ["MALAYSIA"]],
+  ["Indonesia", ["INDONESIA"]],
+  ["Philippines", ["PHILIPPINES", "PHILIPPIN"]],
+  ["Myanmar", ["MYANMAR"]],
+  ["Brunei", ["BRUNEI"]],
+  ["Trung Quốc", ["TRUNG QUOC", "CHINA"]],
+  ["Hồng Kông", ["HONG KONG", "HONGKONG"]],
+  ["Ma Cao", ["MA CAO", "MACAU", "MACAO"]],
+  ["Đài Loan", ["DAI LOAN", "TAIWAN"]],
+  ["Hàn Quốc", ["HAN QUOC", "KOREA"]],
+  ["Nhật Bản", ["NHAT BAN", "JAPAN"]],
+  ["Mông Cổ", ["MONG CO", "MONGOLIA"]],
+  ["Ấn Độ", ["ẤN ĐỘ", "INDIA"]],
+  ["Nepal", ["NEPAL"]],
+  ["Bhutan", ["BHUTAN"]],
+  ["Sri Lanka", ["SRI LANKA"]],
+  ["Maldives", ["MALDIVES"]],
+  ["UAE", ["UAE", "DUBAI", "ABU DHABI"]],
+  ["Thổ Nhĩ Kỳ", ["THO NHI KY", "TURKEY", "TURKIYE"]],
+  ["Ai Cập", ["AI CAP", "EGYPT"]],
+  ["Jordan", ["JORDAN"]],
+  ["Israel", ["ISRAEL"]],
+  // Không dùng "NGA" đứng riêng: khớp nhầm "NGA MI SƠN" (Trung Quốc)
+  ["Nga", ["NƯỚC NGA", "LIÊN BANG NGA", "=NGA:", "RUSSIA", "MOSCOW", "MATXCOVA", "ST.PETERSBURG", "SAINT PETERSBURG"]],
+  ["Kazakhstan", ["KAZAKHSTAN"]],
+  ["Uzbekistan", ["UZBEKISTAN"]],
+  ["Kyrgyzstan", ["KYRGYZSTAN"]],
+  ["Georgia", ["GEORGIA"]],
+  ["Úc", ["ÚC", "AUSTRALIA"]],
+  ["New Zealand", ["NEW ZEALAND"]],
+  ["Mỹ", ["MỸ", "HOA KY", "USA"]],
+  ["Canada", ["CANADA"]],
+  ["Anh", ["ANH QUOC", "VUONG QUOC ANH", "ENGLAND"]],
+  ["Pháp", ["PHÁP", "FRANCE"]],
+  ["Ý", ["Ý", "ITALIA", "ITALY"]],
+  ["Đức", ["ĐỨC", "GERMANY"]],
+  ["Thụy Sĩ", ["THUY SI", "SWITZERLAND"]],
+  ["Áo", ["AUSTRIA"]],
+  ["Hà Lan", ["HA LAN", "NETHERLANDS"]],
+  ["Bỉ", ["BỈ", "BELGIUM"]],
+  ["Luxembourg", ["LUXEMBOURG"]],
+  ["Tây Ban Nha", ["TAY BAN NHA", "SPAIN"]],
+  ["Bồ Đào Nha", ["BO DAO NHA", "PORTUGAL"]],
+  ["Séc", ["CỘNG HÒA SÉC", "SÉC", "CZECH"]],
+  ["Hungary", ["HUNGARY"]],
+  ["Ba Lan", ["BA LAN", "POLAND"]],
+  ["Hy Lạp", ["HY LAP", "GREECE"]],
+  ["Na Uy", ["NA UY", "NORWAY"]],
+  ["Thụy Điển", ["THUY DIEN", "SWEDEN"]],
+  ["Phần Lan", ["PHAN LAN", "FINLAND"]],
+  ["Đan Mạch", ["DAN MACH", "DENMARK"]],
+  ["Iceland", ["ICELAND"]],
+  ["Nam Phi", ["NAM PHI", "SOUTH AFRICA"]],
+  ["Morocco", ["MOROCCO", "MAROC"]],
+  ["Peru", ["PERU"]],
+  ["Brazil", ["BRAZIL"]],
+  ["Argentina", ["ARGENTINA"]],
+  ["Mexico", ["MEXICO"]],
+];
+
+/** Mã nước 2 chữ (trường `country`, thấy "TH" trong samples) */
+const COUNTRY_BY_ISO: Record<string, string> = {
+  TH: "Thái Lan", LA: "Lào", KH: "Campuchia", SG: "Singapore", MY: "Malaysia", ID: "Indonesia",
+  PH: "Philippines", MM: "Myanmar", CN: "Trung Quốc", HK: "Hồng Kông", MO: "Ma Cao", TW: "Đài Loan",
+  KR: "Hàn Quốc", JP: "Nhật Bản", IN: "Ấn Độ", AE: "UAE", TR: "Thổ Nhĩ Kỳ", AU: "Úc", US: "Mỹ",
+};
+
+/** Thành phố / vùng → quốc gia (khi danh mục là thành phố). Bổ sung khi build in cảnh báo. */
+const CITY_ALIASES: [country: string, aliases: string[]][] = [
+  ["Thái Lan", ["PHUKET", "BANGKOK", "PATTAYA", "CHIANG MAI", "CHIANGMAI", "CHIANG RAI", "KRABI", "HAT YAI", "KOH SAMUI", "SAMUI", "PHI PHI"]],
+  ["Lào", ["VIENTIANE", "VIENG CHAN", "LUANG PRABANG", "PAKSE"]],
+  ["Campuchia", ["SIEM REAP", "PHNOM PENH", "ANGKOR", "SIHANOUKVILLE"]],
+  ["Malaysia", ["KUALA LUMPUR", "GENTING", "PENANG", "MALACCA", "MELAKA", "SABAH", "KOTA KINABALU"]],
+  ["Indonesia", ["BALI", "JAKARTA", "BATAM", "BINTAN"]],
+  ["Philippines", ["MANILA", "BORACAY", "CEBU"]],
+  ["Trung Quốc", ["BAC KINH", "THUONG HAI", "TRUNG KHANH", "PHUONG HOANG", "TRUONG GIA GIOI", "LE GIANG", "SHANGRILA", "SHANGRI-LA", "CON MINH", "QUANG CHAU", "THAM QUYEN", "HANG CHAU", "TO CHAU", "CUU TRAI CAU", "THANH DO", "TAY TANG", "LHASA", "NAM NINH", "QUE LAM", "HA KHAU", "TAY AN", "THIEN TAN", "VAN NAM", "BEIJING", "SHANGHAI"]],
+  ["Hàn Quốc", ["SEOUL", "BUSAN", "JEJU", "NAMI"]],
+  ["Nhật Bản", ["TOKYO", "OSAKA", "KYOTO", "HOKKAIDO", "NAGOYA", "FUJI"]],
+  ["Đài Loan", ["DAI BAC", "TAIPEI", "CAO HUNG", "DAI TRUNG"]],
+  ["Singapore", ["SENTOSA"]],
+  ["UAE", ["ABU DHABI"]],
+  ["Thổ Nhĩ Kỳ", ["ISTANBUL", "CAPPADOCIA"]],
+  ["Úc", ["SYDNEY", "MELBOURNE"]],
+];
+
+/** Bỏ dấu, viết hoa: "Thái Lan" → "THAI LAN" */
+function plain(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[đĐ]/g, "D").toUpperCase();
+}
+
+const isAscii = (s: string) => /^[\x20-\x7e]+$/.test(s);
+
+/** Các quốc gia có trong `text`, theo thứ tự xuất hiện */
+function findIn(text: string, table: [string, string[]][]): string[] {
+  const upper = text.normalize("NFC").toLocaleUpperCase("vi");
+  const noMarks = plain(text);
+  const hits: { country: string; at: number }[] = [];
+  for (const [country, aliases] of table) {
+    let at = -1;
+    for (const raw of aliases) {
+      const exact = raw.startsWith("=");
+      const alias = exact ? raw.slice(1) : raw;
+      const hay = !exact && isAscii(alias) ? noMarks : upper;
+      const esc = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Biên chữ có hỗ trợ tiếng Việt: trước/sau không phải chữ hoặc số
+      const m = new RegExp(`(?<![\\p{L}\\p{N}])${esc}(?![\\p{L}\\p{N}])`, "u").exec(hay);
+      if (m && (at < 0 || m.index < at)) at = m.index;
+    }
+    if (at >= 0) hits.push({ country, at });
+  }
+  return hits.sort((a, b) => a.at - b.at).map((h) => h.country);
+}
+
+const unknownCategories = new Set<string>();
+
+/** Quốc gia của tour: [nước chính, ...các nước khác trong tên tour] */
+function countriesOf(b: NtTourBlock, categories: Map<string, string>): string[] {
+  const category = ((b.category_id && categories.get(b.category_id)) || b.category_name || "").replace(/^\s*tour\s+/i, "").trim();
+  // Bỏ phần hãng bay sau dấu "|" để "SINGAPORE AIRLINES" không thành nước Singapore
+  const title = (b.tour_name || b.name || "").split("|")[0];
+
+  const main =
+    findIn(category, COUNTRY_ALIASES)[0] ??
+    COUNTRY_BY_ISO[String(b.country ?? "").trim().toUpperCase()] ??
+    findIn(title, COUNTRY_ALIASES)[0] ??
+    findIn(category, CITY_ALIASES)[0] ??
+    findIn(title, CITY_ALIASES)[0];
+
+  if (!main) {
+    const fallback = category || "Tour nước ngoài";
+    if (!unknownCategories.has(fallback)) {
+      unknownCategories.add(fallback);
+      console.warn(`[tour-rest] Chưa biết quốc gia của danh mục "${fallback}" – thêm vào CITY_ALIASES trong rest.ts`);
+    }
+    return [fallback];
+  }
+  return [...new Set([main, ...findIn(title, COUNTRY_ALIASES)])];
 }
 
 const NAMED_ENTITIES: Record<string, string> = {
@@ -398,17 +565,19 @@ function mapCalendar(c: NtCalendar): Departure | undefined {
  * `categories`: category_id → tên, từ /category/outbound.
  */
 function mapTour(b: NtTourBlock, calendars: NtCalendar[], categories: Map<string, string>): Tour | undefined {
-  const today = todayVN();
-  // GIẢ ĐỊNH: vẫn hiện ngày khởi hành từ hôm nay trở đi, chưa trừ `before_depart` – chờ đối tác xác nhận
+  // Chỉ hiện ngày khởi hành còn cách bây giờ ít nhất `before_depart` giờ (Beo chọn)
+  const now = Date.now();
   const departures = calendars
+    .filter((c) => bookable(isoDate(c.start_date), c.before_depart, now))
     .map(mapCalendar)
-    .filter((d): d is Departure => !!d && d.date >= today)
+    .filter((d): d is Departure => !!d)
     .sort((x, y) => x.date.localeCompare(y.date));
   if (!departures.length) return undefined; // không còn ngày khởi hành → không hiển thị
 
   const first = departures.find((d) => d.status !== "closed") ?? departures[0];
   const firstPrice = calendars.flatMap((c) => c.prices ?? []).find((p) => p.id === first.id);
-  const country = countryOf(b, categories);
+  const countries = countriesOf(b, categories);
+  const country = countries[0];
   const tourTypes = [...new Set(calendars.map((c) => TOUR_TYPE[String(c.tour_type ?? "")]).filter(Boolean))];
 
   const infantAge = num(b.ages_infant) || 2;
@@ -422,7 +591,7 @@ function mapTour(b: NtTourBlock, calendars: NtCalendar[], categories: Map<string
     slug: slugOf(b),
     title: (b.tour_name || b.name || "Tour").trim(),
     country,
-    countries: [country],
+    countries,
     categories: tourTypes,
     durationDays: num(b.total_day),
     durationNights: num(b.total_night),
