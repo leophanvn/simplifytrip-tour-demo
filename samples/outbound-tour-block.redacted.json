@@ -1,0 +1,179 @@
+{
+  "page": 1,
+  "limit": 3,
+  "total_records": 94,
+  "total_pages": 32,
+  "data_list": [
+    {
+      "order": 1,
+      "id": "1c29e6ce-023b-4c86-b8f3-8a91b6e644ea",
+      "category_id": "eb18a04d-b9f5-40f7-a88e-dedb7f595c8e",
+      "category_sub_id": "95b9cf31-3cb4-4bc8-a020-e8c963ad14d4",
+      "category_name": "",
+      "tour_id": "1c29e6ce-023b-4c86-b8f3-8a91b6e644ea",
+      "keyword_search": "tour thái lan, du lịch thái lan, tour bangkok pattaya, tour suan thai, tour du thuyền",
+      "tour_name": "THÁI LAN: BANGKOK - PATTAYA - SUAN THAI - DU THUYỀN | Vietnam Airlines",
+      "tour_code": "THAILAN-VN-SUANTHAI",
+      "departure": "SÀI GÒN",
+      "alias": "thai-lan-vn-bangkok-pattaya-suan-thai",
+      "name": "THÁI LAN: BANGKOK - PATTAYA - SUAN THAI - DU THUYỀN | Vietnam Airlines",
+      "hight_lights": "&lt;img src=&quot;https://booking.dulichthiennhien.vn/Data/image/M&amp;Ocirc;%20TẢ%20WEB/BANGKOK-PATTAYA-2304.jpg&quot; alt=&quot;&quot; width=&quot;2480&quot; height=&quot;1472&quot; /&gt;",
+      "itinerary": "SGN BKK SGN",
+      "country": "TH",
+      "price_default": "8790000",
+      "total_day": 5,
+      "total_night": 4,
+      "vehicles_go": 1,
+      "vehicles_back": 1,
+      "wait_address_customer": "[đã che]",
+      "file_upload": [
+        {
+          "id": "cb8cc243-28c4-4f0c-9fab-16f3a60d77d4",
+          "name": "TOP-VN-THÁI LAN-SUANTHAI-BKK-PTY-5D4N",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8245.docx' border='0' style='text-decoration:none;color:#093;' target='_blank' title='TOP-VN-THÁI LAN-SUANTHAI-BKK-PTY-5D4N'><i class='fa fa-download'></i> TOP-VN-THÁI LAN-SUANTHAI-BKK-PTY-5D4N </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8245.docx"
+        },
+        {
+          "id": "5c67d2d1-66f1-4cfc-81aa-faaf2e6eb4fc",
+          "name": "TOP-VN-TẾT ÂL -THÁI LAN-SUANTHAI-BKK-PTY-5D4N-VN605",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_4924.docx' border='0' style='text-decoration:none;color:#093;' target='_blank' title='TOP-VN-TẾT ÂL -THÁI LAN-SUANTHAI-BKK-PTY-5D4N-VN605'><i class='fa fa-download'></i> TOP-VN-TẾT ÂL -THÁI LAN-SUANTHAI-BKK-PTY-5D4N-VN605 </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_4924.docx"
+        }
+      ],
+      "file_upload_nature": [
+        {
+          "id": "7966b48f-cc91-4410-a255-8326fbcaa49a",
+          "name": "NATURE-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_5255.pdf",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_5255.pdf' border='0' style='text-decoration:none;color:#093;' target='_blank' title='NATURE-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_5255.pdf'><i class='fa fa-download'></i> NATURE-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_5255.pdf </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-VN-TET-AL-THAI-LAN-SUANTHAI-BKK-PTY-5D4N-VN605_5255.pdf"
+        },
+        {
+          "id": "38ab337d-0579-4002-a018-f4d851e8ee2f",
+          "name": "NATURE-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8745.pdf",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8745.pdf' border='0' style='text-decoration:none;color:#093;' target='_blank' title='NATURE-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8745.pdf'><i class='fa fa-download'></i> NATURE-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8745.pdf </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-VN-THAI-LAN-SUANTHAI-BKK-PTY-5D4N_8745.pdf"
+        }
+      ],
+      "image": {
+        "id": "66fa063b-c16e-4e63-87c8-295cc4ad4ab4",
+        "name": "tour_thailan.jpg",
+        "path": "https://hethongbantour.vn/Data/Private/Images/webp/66fa063b-c16e-4e63-87c8-295cc4ad4ab4.webp",
+        "path_nature": "https://booking.dulichthiennhien.vn/Data/Private/Images/webp/66fa063b-c16e-4e63-87c8-295cc4ad4ab4.webp"
+      },
+      "images": [],
+      "calendars": [],
+      "ages_adults": 11,
+      "ages_children1_from": 2,
+      "ages_children1_to": 11,
+      "ages_children2_from": 0,
+      "ages_children2_to": 0,
+      "ages_infant": 2
+    },
+    {
+      "order": 1,
+      "id": "24a0e83a-712e-4857-8d5a-e9eef7eb03ce",
+      "category_id": "e1a8509d-9383-48a2-9413-7e58e0c26838",
+      "category_sub_id": "00000000-0000-0000-0000-000000000000",
+      "category_name": "",
+      "tour_id": "24a0e83a-712e-4857-8d5a-e9eef7eb03ce",
+      "keyword_search": "",
+      "tour_name": "ẤN ĐỘ - TAM GIÁC VÀNG DELHI – JAIPUR - ARGA",
+      "tour_code": "INDIA-TGV-6N5D",
+      "departure": "SÀI GÒN",
+      "alias": "an-do-tam-giac-vang-delhi-jaipur-arga-6n5d",
+      "name": "ẤN ĐỘ - TAM GIÁC VÀNG DELHI – JAIPUR - ARGA",
+      "hight_lights": "\r\n<p>- Đền Taj Mahal</p>\r\n<p>- Pháo đài Agra</p>\r\n<p>- Cung điện Gió</p>\r\n<p>- Trải nghiệm cưỡi voi</p>\r\n<p>- Thành phố màu hồng</p>\r\n<p>-&nbsp;Pháo Đài Amber</p>\r\n<p>- Thành phố Delhi</p>\r\n<p>-&nbsp;Đền Hoa Sen&nbsp;</p>\r\n",
+      "itinerary": "TAM GIÁC VÀNG DELHI - JAIPUR - ARGA (6N5Đ)",
+      "country": "",
+      "price_default": "18990000",
+      "total_day": 6,
+      "total_night": 5,
+      "vehicles_go": 1,
+      "vehicles_back": 1,
+      "wait_address_customer": "[đã che]",
+      "file_upload": [
+        {
+          "id": "b8bd0c49-f1e3-4f49-a18c-7bf1f37ec4a1",
+          "name": "TOP INDIA - ẤN ĐỘ - TAM GIÁC VÀNG 6N5Đ - VJ - T3.4",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-INDIA-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.doc' border='0' style='text-decoration:none;color:#093;' target='_blank' title='TOP INDIA - ẤN ĐỘ - TAM GIÁC VÀNG 6N5Đ - VJ - T3.4'><i class='fa fa-download'></i> TOP INDIA - ẤN ĐỘ - TAM GIÁC VÀNG 6N5Đ - VJ - T3.4 </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-INDIA-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.doc"
+        }
+      ],
+      "file_upload_nature": [
+        {
+          "id": "ef15ced4-bf73-451c-8df1-c21430d4b60f",
+          "name": "NATURE-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.pdf",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.pdf' border='0' style='text-decoration:none;color:#093;' target='_blank' title='NATURE-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.pdf'><i class='fa fa-download'></i> NATURE-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.pdf </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-AN-DO-TAM-GIAC-VANG-6N5D-VJ-T3-4.pdf"
+        }
+      ],
+      "image": {
+        "id": "62eab62f-799c-4dfb-9fcc-9b578a7b1ca2",
+        "name": "SP-Web-2023.jpg",
+        "path": "https://hethongbantour.vn/Data/Private/Images/webp/62eab62f-799c-4dfb-9fcc-9b578a7b1ca2.webp",
+        "path_nature": "https://booking.dulichthiennhien.vn/Data/Private/Images/webp/62eab62f-799c-4dfb-9fcc-9b578a7b1ca2.webp"
+      },
+      "images": [],
+      "calendars": [],
+      "ages_adults": 11,
+      "ages_children1_from": 2,
+      "ages_children1_to": 11,
+      "ages_children2_from": 2,
+      "ages_children2_to": 5,
+      "ages_infant": 2
+    },
+    {
+      "order": 1,
+      "id": "26ffbf52-9984-4a25-921a-fe43deb9224d",
+      "category_id": "a16da013-96f8-490a-bb5b-bb1ac0e8daf1",
+      "category_sub_id": "00000000-0000-0000-0000-000000000000",
+      "category_name": "",
+      "tour_id": "26ffbf52-9984-4a25-921a-fe43deb9224d",
+      "keyword_search": "",
+      "tour_name": "THAI LAN: CHIANGMAI - CHIANG RAI",
+      "tour_code": "CHIANGMAI.4D.VJ",
+      "departure": "SÀI GÒN",
+      "alias": "chiangmai-chiang-rai",
+      "name": "THAI LAN: CHIANGMAI - CHIANG RAI",
+      "hight_lights": "\r\n<p>- Chùa Phrathat linh thiêng ánh lên ánh vàng lung linh trong ráng chiều, cùng với năng lượng huyền ảo từ xá lợi Phật.</p>\r\n<p>-&nbsp;Chùa trắng - Wat Rong Khun - một trong những biểu tượng tham quan nổi tiếng của đất nước Thái Lan – Với những đường nét sắc sảo và tinh tế.</p>\r\n<p>-&nbsp;Thưởng thức bữa tối truyền thống Kantoke, bạn sẽ cảm nhận được nét tinh hoa mà người dân Chiangmai mang vào bữa ăn của mình, cùng với điệu múa dù trong trang phục địa phương đậm nét vùng cao, tất cả cùng hòa mình vào những âm thanh đến ngây lòng.</p>\r\n<p>-&nbsp;Tam giác Vàng – nơi giao nhau của 3 nước Myanmar – Lào – Thái Lan, từng là nơi xảy ra những biến cố trong lịch sử đẫm máu đi kèm với loài hoa Anh Túc trong suốt nhiều thập kỉ trước</p>\r\n<p>-&nbsp;Đồi chè Choui Fong với màu xanh bạt ngàn của chè, cho bạn những tấm hình cực lung linh.</p>\r\n<p>-&nbsp;Suối khoáng nóng Mae Khachan, với nhiều khoáng chất từ lòng đất suốt hàng triệu năm qua, sẽ giúp bạn và gia đình cảm thấy sảng khoái với sự giao hòa giữa khí trời mát mẻ và hơi nóng từ suối khoáng.</p>\r\n<p>-&nbsp;Làng dân tộc cổ dài, trở nên nổi tiếng với hình ảnh những người phụ nữ với chiếc cổ cao hàng chục centimet, được định hình bằng những chiếc vòng kim loại, bạn sẽ thấy cái lạ và cái độc đáo của một nền văn hóa lâu đời.</p>\r\n<p>-&nbsp;Trại voi và Vườn hoa hoàng gia Royal Flora Garden sắc màu rực rỡ.</p>\r\n",
+      "itinerary": "SGN-CHIANGMAI-SGN",
+      "country": "",
+      "price_default": "8990000",
+      "total_day": 4,
+      "total_night": 3,
+      "vehicles_go": 1,
+      "vehicles_back": 1,
+      "wait_address_customer": "[đã che]",
+      "file_upload": [
+        {
+          "id": "04d4bd22-f231-4d12-9874-5a38d0ea26fa",
+          "name": "TOP - CHIANGMAI - VJA - T12.2023 - T3.2024",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-CHIANGMAI-VJA-T12-2023-T3-2024.docx' border='0' style='text-decoration:none;color:#093;' target='_blank' title='TOP - CHIANGMAI - VJA - T12.2023 - T3.2024'><i class='fa fa-download'></i> TOP - CHIANGMAI - VJA - T12.2023 - T3.2024 </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFileTOP/TOP-CHIANGMAI-VJA-T12-2023-T3-2024.docx"
+        }
+      ],
+      "file_upload_nature": [
+        {
+          "id": "18d7482c-c6ed-44af-b52c-b8ed81399616",
+          "name": "NATURE - CHIANGMAI - VJA - T12.2023 - T3.2024",
+          "path": "<a href='https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-CHIANGMAI-VJA-T12-2023-T3-2024.pdf' border='0' style='text-decoration:none;color:#093;' target='_blank' title='NATURE - CHIANGMAI - VJA - T12.2023 - T3.2024'><i class='fa fa-download'></i> NATURE - CHIANGMAI - VJA - T12.2023 - T3.2024 </a>",
+          "path_ext": "https://hethongbantour.vn/Data/Private/Download/UploadAttackFile/NATURE-CHIANGMAI-VJA-T12-2023-T3-2024.pdf"
+        }
+      ],
+      "image": {
+        "id": "3e6a7c4b-32ed-4032-8c03-a91d0ac5f543",
+        "name": "CM4N.jpg",
+        "path": "https://hethongbantour.vn/Data/Private/Images/webp/3e6a7c4b-32ed-4032-8c03-a91d0ac5f543.webp",
+        "path_nature": "https://booking.dulichthiennhien.vn/Data/Private/Images/webp/3e6a7c4b-32ed-4032-8c03-a91d0ac5f543.webp"
+      },
+      "images": [],
+      "calendars": [],
+      "ages_adults": 11,
+      "ages_children1_from": 2,
+      "ages_children1_to": 11,
+      "ages_children2_from": 2,
+      "ages_children2_to": 5,
+      "ages_infant": 2
+    }
+  ]
+}

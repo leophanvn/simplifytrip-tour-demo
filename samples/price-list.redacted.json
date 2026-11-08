@@ -1,0 +1,28 @@
+[
+  {
+    "id": "a3db0968-e896-47be-be56-f3d44c307e3e",
+    "calendar_id": "384e826a-482b-4588-bb2b-f6152d05b5dc",
+    "level_nam": "KHÁCH SẠN 4*",
+    "price_code_manager": "THAILAN-VN-SUANTHAI-VN-261108",
+    "ticket_plane_go": "VN605 SGN BKK 11:35 - 13:10",
+    "ticket_plane_back": "VN604 BKK SGN 14:20 - 16:05",
+    "code_ticket_plane_go": "VN605 SGN BKK 11:35 - 13:10",
+    "code_ticket_plane_back": "VN604 BKK SGN 14:20 - 16:05",
+    "adults_price": 8990000,
+    "adults_promotion": 8990000,
+    "children_has_bed_price": 8990000,
+    "children_has_bed_promotion": 8990000,
+    "children_no_bed_price": 7867500,
+    "children_no_bed_promotion": 7867500,
+    "children_50_bed_price": 0,
+    "children_50_bed_promotion": 0,
+    "infant_price": 2247500,
+    "infant_promotion": 2247500,
+    "single_room_add": 2200000,
+    "foreign_surcharge": 0,
+    "number_seat_open": 0,
+    "number_seat_available": 0,
+    "deadline_visa": "",
+    "deadline_visa_date": null
+  }
+]

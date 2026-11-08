@@ -15,11 +15,15 @@ export interface TourProvider {
   checkSeatsAvailable?(departureId: string): Promise<number>;
 }
 
-/** Lỗi gọi đối tác. `message` chỉ chứa mô tả chung, an toàn để log. */
+/**
+ * Lỗi gọi đối tác. `message` chỉ chứa mô tả chung, an toàn để log.
+ * `code`: mã lỗi kỹ thuật để tra cứu, ví dụ "TimeoutError", "ECONNRESET", "HTTP 500".
+ */
 export class ProviderError extends Error {
   constructor(
     message: string,
     public readonly status?: number,
+    public readonly code?: string,
   ) {
     super(message);
     this.name = "ProviderError";
