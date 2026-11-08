@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Departure, Tour } from "@/data/tours";
+import type { Departure, Tour } from "@/lib/types";
 import { ddmm, ddmmyyyy, shortVnd, vnd } from "@/lib/format";
-import { fromPrice } from "@/lib/tour-repository";
+import { fromPrice } from "@/lib/tour-utils";
 import { Icon } from "./Icon";
 import { useComingSoon } from "./ComingSoon";
 

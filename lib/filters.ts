@@ -1,5 +1,5 @@
-import type { Tour } from "@/data/tours";
-import { fromPrice, nextDeparture } from "./tour-repository";
+import type { Tour } from "./types";
+import { fromPrice, nextDeparture } from "./tour-utils";
 
 export const BUDGETS = [
   { id: "lt10", label: "Dưới 10 triệu", min: 0, max: 10_000_000 },

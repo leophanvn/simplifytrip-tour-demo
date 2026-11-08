@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Tour } from "@/data/tours";
+import type { Tour } from "@/lib/types";
 import { vnd } from "@/lib/format";
-import { fromPrice } from "@/lib/tour-repository";
+import { fromPrice } from "@/lib/tour-utils";
 import { BookingBox } from "./BookingBox";
 import { Icon } from "./Icon";
 import { useComingSoon } from "./ComingSoon";

@@ -1,69 +1,14 @@
 /**
  * DỮ LIỆU GIẢ LẬP (mock) cho bản demo.
  *
- * Tên trường được đặt gần với API Du Lịch Thiên Nhiên để sau này chỉ cần
- * thay lớp đọc dữ liệu trong `lib/tour-repository.ts`:
- *   - /tour-rows            → Tour (thông tin chung, dùng cho danh sách)
- *   - /calendar/{tourId}    → Tour.departures (lịch khởi hành)
- *   - /price/{departureId}  → Departure.price*
- *   - /content/{tourId}     → Tour.itinerary, includes, excludes, notes...
+ * Được dùng khi TOUR_PROVIDER=mock hoặc khi chưa điền key (xem lib/config.ts).
+ * Kiểu dữ liệu nằm ở lib/types.ts; dữ liệu thật đi qua lib/providers/rest.ts.
  *
  * Nội dung tour chỉ để minh họa giao diện. Giá, ngày và lịch trình không
  * phải dữ liệu bán thật.
  */
 
-export type DepartureStatus = "open" | "few" | "closed";
-
-export interface Departure {
-  id: string;
-  /** ISO date, ví dụ 2026-11-11 */
-  date: string;
-  returnDate: string;
-  priceAdult: number;
-  priceChild: number;
-  priceInfant: number;
-  seatsLeft: number;
-  status: DepartureStatus;
-  flightOut: string;
-  flightBack: string;
-}
-
-export interface ItineraryDay {
-  day: number;
-  title: string;
-  meals?: string;
-  /** Cho phép **in đậm** bằng cú pháp markdown đơn giản */
-  body: string;
-}
-
-export interface Tour {
-  id: string;
-  code: string;
-  slug: string;
-  title: string;
-  country: string;
-  countries: string[];
-  categories: string[];
-  durationDays: number;
-  durationNights: number;
-  departCity: string;
-  airline: string;
-  hotelClass: string;
-  /** Unsplash photo id (images.unsplash.com/photo-<id>) */
-  images: string[];
-  highlights: string[];
-  promotion?: { title: string; items: string[] };
-  itinerary: ItineraryDay[];
-  includes: string[];
-  excludes: string[];
-  childPolicy: { age: string; price: string; note: string }[];
-  depositPct: number;
-  cancelRules: { when: string; fee: string }[];
-  notes: string[];
-  visaIncluded: boolean;
-  departures: Departure[];
-  relatedProductIds: string[];
-}
+import type { Departure, ItineraryDay, RelatedProduct, Tour, TourFacets } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
 /* Ảnh: Unsplash License (miễn phí cho mục đích thương mại, không cần xin phép) */
@@ -438,15 +383,6 @@ export const TOURS: Tour[] = [
 /* -------------------------------------------------------------------------- */
 /* Sản phẩm bán kèm (lấy từ danh mục SIM/eSIM hiện có của Simplify Trip)        */
 /* -------------------------------------------------------------------------- */
-export interface RelatedProduct {
-  id: string;
-  kind: "esim" | "sim" | "visa";
-  label: string;
-  title: string;
-  price: string;
-  image?: string;
-  href: string;
-}
 
 export const RELATED_PRODUCTS: RelatedProduct[] = [
   {
@@ -477,6 +413,16 @@ export const RELATED_PRODUCTS: RelatedProduct[] = [
   },
 ];
 
-export const DESTINATIONS = ["Trung Quốc", "Nhật Bản", "Thái Lan", "Hàn Quốc", "Đài Loan", "Singapore", "Dubai", "Châu Âu"];
-export const CATEGORIES = ["Thu Đông", "Tết Dương lịch 2027", "Tết Âm Lịch 2027", "Đồng Giá", "Tour No Shopping"];
-export const AIRLINES = ["VietJet Air", "China Southern Airlines", "Shenzhen Airlines", "Qingdao Airlines", "Shandong Airlines", "Colorful Guizhou Airlines"];
+const DESTINATIONS = ["Trung Quốc", "Nhật Bản", "Thái Lan", "Hàn Quốc", "Đài Loan", "Singapore", "Dubai", "Châu Âu"];
+const CATEGORIES = ["Thu Đông", "Tết Dương lịch 2027", "Tết Âm Lịch 2027", "Đồng Giá", "Tour No Shopping"];
+const AIRLINES = ["VietJet Air", "China Southern Airlines", "Shenzhen Airlines", "Qingdao Airlines", "Shandong Airlines", "Colorful Guizhou Airlines"];
+
+/** Bộ lọc của dữ liệu giả lập (giữ danh sách cố định như bản demo) */
+export const MOCK_FACETS: Omit<TourFacets, "months"> = {
+  destinations: DESTINATIONS,
+  categories: CATEGORIES,
+  airlines: AIRLINES,
+};
+
+/** Chính sách mặc định của Simplify Trip – dùng khi đối tác không trả về */
+export const DEFAULT_POLICY = { depositPct: 50, cancelRules: CANCEL_RULES, notes: NOTES };

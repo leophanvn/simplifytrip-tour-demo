@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { RelatedProduct } from "@/data/tours";
+import type { RelatedProduct } from "@/lib/types";
 import { Icon } from "./Icon";
 import { ComingSoonButton } from "./ComingSoon";
 

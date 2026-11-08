@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Tour } from "@/data/tours";
-import { ddmm, durationLabel, unsplash, vnd } from "@/lib/format";
-import { fromPrice } from "@/lib/tour-repository";
+import type { Tour } from "@/lib/types";
+import { ddmm, durationLabel, imageSrc, vnd } from "@/lib/format";
+import { fromPrice } from "@/lib/tour-utils";
 import { Icon } from "./Icon";
 
 export function TourCard({ tour, priority = false }: { tour: Tour; priority?: boolean }) {
@@ -15,7 +15,7 @@ export function TourCard({ tour, priority = false }: { tour: Tour; priority?: bo
     <article className="card group flex flex-col overflow-hidden transition-shadow hover:shadow-hover">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-sage" tabIndex={-1} aria-hidden="true">
         <Image
-          src={unsplash(tour.images[0], 640)}
+          src={imageSrc(tour.images[0], 640)}
           alt=""
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"

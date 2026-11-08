@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import type { Tour } from "@/data/tours";
-import { AIRLINES, CATEGORIES, DESTINATIONS, PHOTOS } from "@/data/tours";
+import type { Tour, TourFacets } from "@/lib/types";
 import {
   BUDGETS,
   DURATIONS,
@@ -20,7 +19,8 @@ import { unsplash } from "@/lib/format";
 import { Icon } from "./Icon";
 import { TourCard } from "./TourCard";
 
-const MONTHS = ["2026-11", "2026-12", "2027-01", "2027-02", "2027-03"];
+/** Ảnh nền khu vực tìm kiếm (Unsplash: Thiên Môn Sơn, tác giả 阳 晨) */
+const HERO_PHOTO = "1700580180134-724396022d40";
 const monthLabel = (m: string) => {
   const [y, mm] = m.split("-");
   return `Tháng ${Number(mm)}/${y}`;
@@ -28,7 +28,8 @@ const monthLabel = (m: string) => {
 
 type ListKey = "dest" | "cat" | "budget" | "days" | "air";
 
-export function TourListing({ tours }: { tours: Tour[] }) {
+export function TourListing({ tours, facets }: { tours: Tour[]; facets: TourFacets }) {
+  const { destinations: DESTINATIONS, months: MONTHS } = facets;
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -67,7 +68,7 @@ export function TourListing({ tours }: { tours: Tour[] }) {
   }, [sheet]);
 
   const filterPanel = (inSheet: boolean) => (
-    <FilterPanel f={f} toggle={toggle} update={update} clearAll={clearAll} showHeader={!inSheet} />
+    <FilterPanel f={f} facets={facets} toggle={toggle} update={update} clearAll={clearAll} showHeader={!inSheet} />
   );
 
   return (
@@ -94,7 +95,7 @@ export function TourListing({ tours }: { tours: Tour[] }) {
               </p>
             </div>
             <div className="relative hidden h-[150px] overflow-hidden rounded-lg lg:block">
-              <Image src={unsplash(PHOTOS.tianmen, 800)} alt="Thiên Môn Sơn, Trương Gia Giới" fill sizes="380px" className="object-cover" priority />
+              <Image src={unsplash(HERO_PHOTO, 800)} alt="Thiên Môn Sơn, Trương Gia Giới" fill sizes="380px" className="object-cover" priority />
             </div>
           </div>
 
@@ -345,17 +346,20 @@ function PageBtn({
 
 function FilterPanel({
   f,
+  facets,
   toggle,
   update,
   clearAll,
   showHeader,
 }: {
   f: TourFilters;
+  facets: TourFacets;
   toggle: (k: ListKey, v: string) => void;
   update: (p: Partial<TourFilters>) => void;
   clearAll: () => void;
   showHeader: boolean;
 }) {
+  const { destinations: DESTINATIONS, categories: CATEGORIES, airlines: AIRLINES, months: MONTHS } = facets;
   const [showAllDest, setShowAllDest] = useState(false);
   const dests = showAllDest ? DESTINATIONS : DESTINATIONS.slice(0, 5);
   return (
@@ -401,17 +405,21 @@ function FilterPanel({
         {dests.map((d) => (
           <Check key={d} checked={f.dest.includes(d)} onChange={() => toggle("dest", d)} label={d} />
         ))}
-        <button onClick={() => setShowAllDest((v) => !v)} className="flex min-h-8 items-center gap-1 text-[13px] font-semibold text-brand">
-          <Icon name="down" size={14} className={showAllDest ? "rotate-180" : ""} />
-          {showAllDest ? "Thu gọn" : `Xem thêm ${DESTINATIONS.length - 5} điểm đến`}
-        </button>
+        {DESTINATIONS.length > 5 && (
+          <button onClick={() => setShowAllDest((v) => !v)} className="flex min-h-8 items-center gap-1 text-[13px] font-semibold text-brand">
+            <Icon name="down" size={14} className={showAllDest ? "rotate-180" : ""} />
+            {showAllDest ? "Thu gọn" : `Xem thêm ${DESTINATIONS.length - 5} điểm đến`}
+          </button>
+        )}
       </Group>
 
-      <Group title="Thể loại">
-        {CATEGORIES.map((c) => (
-          <Check key={c} checked={f.cat.includes(c)} onChange={() => toggle("cat", c)} label={c} />
-        ))}
-      </Group>
+      {CATEGORIES.length > 0 && (
+        <Group title="Thể loại">
+          {CATEGORIES.map((c) => (
+            <Check key={c} checked={f.cat.includes(c)} onChange={() => toggle("cat", c)} label={c} />
+          ))}
+        </Group>
+      )}
 
       <Group title="Số ngày">
         {DURATIONS.map((d) => (
@@ -419,11 +427,13 @@ function FilterPanel({
         ))}
       </Group>
 
-      <Group title="Hãng bay" last>
-        {AIRLINES.map((a) => (
-          <Check key={a} checked={f.air.includes(a)} onChange={() => toggle("air", a)} label={a} />
-        ))}
-      </Group>
+      {AIRLINES.length > 0 && (
+        <Group title="Hãng bay" last>
+          {AIRLINES.map((a) => (
+            <Check key={a} checked={f.air.includes(a)} onChange={() => toggle("air", a)} label={a} />
+          ))}
+        </Group>
+      )}
     </div>
   );
 }

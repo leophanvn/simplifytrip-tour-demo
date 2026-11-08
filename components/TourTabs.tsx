@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Tour } from "@/data/tours";
+import type { Tour } from "@/lib/types";
 import { Icon } from "./Icon";
 import { RichText } from "./RichText";
 
@@ -37,13 +37,25 @@ export function TourTabs({ tour }: { tour: Tour }) {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold sm:text-xl">Lịch trình chi tiết</h2>
+              {tour.itinerary.length > 0 && (
               <button
                 className="min-h-11 text-sm font-semibold text-brand"
                 onClick={() => setOpen(open.map(() => !allOpen))}
               >
                 {allOpen ? "Thu gọn tất cả" : "Mở tất cả"}
               </button>
+              )}
             </div>
+            {tour.itinerary.length === 0 && (
+              <div className="flex flex-col gap-3 rounded-lg border border-dashed border-[#c9cfd6] p-5 text-[15px] text-ink-2">
+                <span>Lịch trình theo ngày đang được cập nhật.</span>
+                {tour.programFileUrl && (
+                  <a href={tour.programFileUrl} target="_blank" rel="noopener noreferrer" className="btn-outline btn-sm self-start">
+                    <Icon name="doc" /> Xem chương trình tour (PDF)
+                  </a>
+                )}
+              </div>
+            )}
             {tour.itinerary.map((d, i) => (
               <div key={d.day} className="overflow-hidden rounded-lg border border-line">
                 <button
@@ -70,14 +82,16 @@ export function TourTabs({ tour }: { tour: Tour }) {
 
         {tab === 1 && (
           <div className="flex flex-col gap-5">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Box title="Giá tour bao gồm" titleClass="text-brand">
-                <List items={tour.includes} icon="check" iconClass="text-[#3e7a12]" />
-              </Box>
-              <Box title="Không bao gồm" titleClass="text-danger">
-                <List items={tour.excludes} icon="x" iconClass="text-[#c2410c]" />
-              </Box>
-            </div>
+            {(tour.includes.length > 0 || tour.excludes.length > 0) && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <Box title="Giá tour bao gồm" titleClass="text-brand">
+                  <List items={tour.includes} icon="check" iconClass="text-[#3e7a12]" />
+                </Box>
+                <Box title="Không bao gồm" titleClass="text-danger">
+                  <List items={tour.excludes} icon="x" iconClass="text-[#c2410c]" />
+                </Box>
+              </div>
+            )}
             <Box title="Giá trẻ em">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[420px] border-collapse text-sm">
@@ -99,7 +113,6 @@ export function TourTabs({ tour }: { tour: Tour }) {
                   </tbody>
                 </table>
               </div>
-              <p className="text-[13px] text-muted">1 người lớn đi cùng 1 bé dưới 12 tuổi: bé tính giá giường riêng.</p>
             </Box>
           </div>
         )}
@@ -127,9 +140,11 @@ export function TourTabs({ tour }: { tour: Tour }) {
               </ol>
               <p className="text-[13px] text-muted">Lãnh sự từ chối cấp visa: quý khách nộp lệ phí visa theo quy định.</p>
             </Box>
-            <Box title="Lưu ý quan trọng">
-              <List items={tour.notes} icon="right" iconClass="text-brand" />
-            </Box>
+            {tour.notes.length > 0 && (
+              <Box title="Lưu ý quan trọng">
+                <List items={tour.notes} icon="right" iconClass="text-brand" />
+              </Box>
+            )}
           </div>
         )}
 
@@ -138,13 +153,17 @@ export function TourTabs({ tour }: { tour: Tour }) {
             <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 text-[15px] leading-relaxed">
               <Icon name={tour.visaIncluded ? "check" : "info"} size={20} className="mt-0.5 text-brand" />
               <span>
-                {tour.visaIncluded ? (
+                {tour.visaIncluded === undefined ? (
+                  <>
+                    Thông tin visa của tour đang được cập nhật. Liên hệ Simplify Trip để được tư vấn <b>visa trọn gói</b>.
+                  </>
+                ) : tour.visaIncluded ? (
                   <>
                     Tour <b>đã bao gồm visa đoàn</b> nhập cảnh. Quý khách chỉ cần nộp hộ chiếu và ảnh theo hướng dẫn.
                   </>
                 ) : (
                   <>
-                    Tour <b>chưa bao gồm visa</b> cho chặng Nhật Bản. Simplify Trip hỗ trợ làm visa trọn gói.
+                    Tour <b>chưa bao gồm visa</b>. Simplify Trip hỗ trợ làm visa trọn gói.
                   </>
                 )}
               </span>

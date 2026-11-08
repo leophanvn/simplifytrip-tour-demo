@@ -3,6 +3,12 @@ node_modules
 out
 next-env.d.ts
 *.tsbuildinfo
-.env*.local
+# Thông tin kết nối – không bao giờ đẩy lên GitHub
+.env
+.env.*
+!.env.example
+# Tài liệu API gốc của đối tác (có key thử, tài khoản demo)
+*.pdf
+API-Tour/
 .vercel
 .DS_Store

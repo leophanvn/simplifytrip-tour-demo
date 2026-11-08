@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Ảnh tour đang cập nhật">
+  <rect width="800" height="500" fill="#E3ECE6"/>
+  <path d="M0 380 L180 250 L300 330 L460 190 L640 320 L800 230 L800 500 L0 500 Z" fill="#C9D9CE"/>
+  <path d="M0 430 L220 330 L380 400 L560 300 L800 390 L800 500 L0 500 Z" fill="#B3C8B9"/>
+  <circle cx="620" cy="120" r="42" fill="#E3B433" opacity="0.8"/>
+  <text x="400" y="470" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" fill="#3F4D36">Ảnh tour đang cập nhật</text>
+</svg>

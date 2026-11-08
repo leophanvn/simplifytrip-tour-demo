@@ -11,25 +11,30 @@ import { TourActions } from "@/components/TourActions";
 import { TourCard } from "@/components/TourCard";
 import { TourTabs } from "@/components/TourTabs";
 import { durationLabel } from "@/lib/format";
-import { getRelatedProducts, getSimilarTours, getTourBySlug, getTours } from "@/lib/tour-repository";
+import { DataSourceNote } from "@/components/DataSourceNote";
+import { getDataSource, getRelatedProducts, getSimilarTours, getTourBySlug, getTourSlugs } from "@/lib/tour-repository";
 
-export function generateStaticParams() {
-  return getTours().map((t) => ({ slug: t.slug }));
+/** Làm mới dữ liệu tối đa 15 phút/lần */
+export const revalidate = 900;
+
+export async function generateStaticParams() {
+  return (await getTourSlugs()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/tour/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const tour = getTourBySlug(slug);
-  return { title: tour?.title ?? "Không tìm thấy tour" };
+  const tour = await getTourBySlug(slug).catch(() => undefined);
+  return { title: tour?.title ?? "Tour" };
 }
 
 export default async function TourDetailPage({ params }: PageProps<"/tour/[slug]">) {
   const { slug } = await params;
-  const tour = getTourBySlug(slug);
+  const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
   const related = getRelatedProducts(tour.relatedProductIds).filter((p) => p.kind !== "visa");
-  const similar = getSimilarTours(tour);
+  const similar = await getSimilarTours(tour);
+  const { source, fallbackReason } = getDataSource();
   const facts = [
     { icon: "pin", label: "Khởi hành", value: tour.departCity },
     { icon: "clock", label: "Thời gian", value: durationLabel(tour.durationDays, tour.durationNights) },
@@ -135,6 +140,7 @@ export default async function TourDetailPage({ params }: PageProps<"/tour/[slug]
         </aside>
       </div>
 
+      {related.length > 0 && (
       <section className="bg-sage py-10">
         <div className="container-st">
           <div className="mb-[18px] flex flex-wrap items-end justify-between gap-2">
@@ -151,6 +157,7 @@ export default async function TourDetailPage({ params }: PageProps<"/tour/[slug]
           </div>
         </div>
       </section>
+      )}
 
       {similar.length > 0 && (
         <section className="py-10">
@@ -173,6 +180,7 @@ export default async function TourDetailPage({ params }: PageProps<"/tour/[slug]
         </section>
       )}
 
+      <DataSourceNote source={source} fallbackReason={fallbackReason} />
       <MobileBookingBar tour={tour} />
     </main>
   );

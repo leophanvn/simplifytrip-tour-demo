@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { unsplash } from "@/lib/format";
+import { imageSrc } from "@/lib/format";
 import { Icon } from "./Icon";
 
-export function Gallery({ images, title }: { images: string[]; title: string }) {
+export function Gallery({ images: raw, title }: { images: string[]; title: string }) {
+  // Tour chưa có ảnh: hiện 1 ảnh nền chung
+  const images = raw.length ? raw : [""];
   const [idx, setIdx] = useState<number | null>(null);
   const dlg = useRef<HTMLDialogElement>(null);
   const [mIdx, setMIdx] = useState(0);
@@ -28,11 +30,11 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
       {/* Desktop: lưới ảnh */}
       <div className="hidden h-[408px] grid-cols-[2fr_1fr] grid-rows-2 gap-2 overflow-hidden rounded-lg md:grid">
         <button className="relative row-span-2" onClick={() => setIdx(0)} aria-label="Xem ảnh lớn">
-          <Image src={unsplash(main, 1200)} alt={title} fill sizes="(max-width:1080px) 66vw, 700px" className="object-cover" priority />
+          <Image src={imageSrc(main, 1200)} alt={title} fill sizes="(max-width:1080px) 66vw, 700px" className="object-cover" priority />
         </button>
         {side.map((img, i) => (
           <button key={img} className="relative" onClick={() => setIdx(i + 1)} aria-label={`Xem ảnh ${i + 2}`}>
-            <Image src={unsplash(img, 700)} alt="" fill sizes="350px" className="object-cover" />
+            <Image src={imageSrc(img, 700)} alt="" fill sizes="350px" className="object-cover" />
             {i === side.length - 1 && (
               <span className="btn-ghost absolute right-3 bottom-3 bg-white">
                 <Icon name="img" /> Xem tất cả {n} ảnh
@@ -55,7 +57,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
         >
           {images.map((img, i) => (
             <button key={img} className="relative aspect-[4/3] w-full shrink-0 snap-center" onClick={() => setIdx(i)} aria-label={`Xem ảnh ${i + 1}`}>
-              <Image src={unsplash(img, 800)} alt={i === 0 ? title : ""} fill sizes="100vw" className="object-cover" priority={i === 0} />
+              <Image src={imageSrc(img, 800)} alt={i === 0 ? title : ""} fill sizes="100vw" className="object-cover" priority={i === 0} />
             </button>
           ))}
         </div>
@@ -77,7 +79,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
       >
         {idx !== null && (
           <div className="relative flex h-full items-center justify-center">
-            <Image src={unsplash(images[idx], 1600)} alt="" fill sizes="100vw" className="object-contain" />
+            <Image src={imageSrc(images[idx], 1600)} alt="" fill sizes="100vw" className="object-contain" />
             <button onClick={() => setIdx(null)} aria-label="Đóng" className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-full bg-white/15 text-white">
               <Icon name="x" size={22} />
             </button>

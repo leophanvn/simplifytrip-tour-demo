@@ -4,9 +4,14 @@ import { CrossSellCard } from "@/components/CrossSell";
 import { Icon } from "@/components/Icon";
 import { TourCard } from "@/components/TourCard";
 import { TourListing } from "@/components/TourListing";
-import { getRelatedProducts, getTours } from "@/lib/tour-repository";
+import { DataSourceNote } from "@/components/DataSourceNote";
+import { getDataSource, getRelatedProducts, getTourList } from "@/lib/tour-repository";
+import type { Tour } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tour nước ngoài trọn gói" };
+
+/** Làm mới dữ liệu tối đa 15 phút/lần (giá và số chỗ được kiểm tra lại khi đặt) */
+export const revalidate = 900;
 
 const WHY = [
   { icon: "globe", title: "Một nơi cho cả chuyến đi", text: "Tour, visa và SIM/eSIM trong cùng một tài khoản, một giỏ hàng." },
@@ -14,15 +19,22 @@ const WHY = [
   { icon: "headset", title: "Hỗ trợ 24/7", text: "Đội ngũ hỗ trợ suốt hành trình, kể cả khi bạn đang ở nước ngoài." },
 ];
 
-export default function TourListPage() {
-  const tours = getTours();
+export default async function TourListPage() {
+  const { tours, facets, failed } = await getTourList();
   const related = getRelatedProducts(["esim-cn", "sim-cn", "visa-cn"]);
+  const { source, fallbackReason } = getDataSource();
 
   return (
     <main>
-      <Suspense fallback={<ListingFallback />}>
-        <TourListing tours={tours} />
+      {failed && (
+        <div role="alert" className="bg-warn-bg px-4 py-3 text-center text-sm text-warn-ink">
+          Chưa tải được dữ liệu tour. Vui lòng thử lại sau ít phút hoặc gọi hotline (+84) 931 88 7120.
+        </div>
+      )}
+      <Suspense fallback={<ListingFallback tours={tours} />}>
+        <TourListing tours={tours} facets={facets} />
       </Suspense>
+      <DataSourceNote source={source} fallbackReason={fallbackReason} />
 
       <section className="bg-sage py-11">
         <div className="container-st">
@@ -59,12 +71,11 @@ export default function TourListPage() {
   );
 }
 
-function ListingFallback() {
-  const tours = getTours().slice(0, 6);
+function ListingFallback({ tours }: { tours: Tour[] }) {
   return (
     <section className="bg-n25 py-8">
       <div className="container-st grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {tours.map((t) => (
+        {tours.slice(0, 6).map((t) => (
           <TourCard key={t.id} tour={t} />
         ))}
       </div>

@@ -29,3 +29,15 @@ export function durationLabel(days: number, nights: number): string {
 export function unsplash(id: string, w = 800): string {
   return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
 }
+
+export const IMAGE_PLACEHOLDER = "/brand/tour-placeholder.svg";
+
+/**
+ * Ảnh tour: dữ liệu giả lưu Unsplash id, dữ liệu thật lưu URL đầy đủ.
+ * Không có ảnh thì dùng ảnh nền chung của Simplify Trip.
+ */
+export function imageSrc(src: string | undefined, w = 800): string {
+  if (!src) return IMAGE_PLACEHOLDER;
+  if (src.startsWith("http") || src.startsWith("/")) return src;
+  return unsplash(src, w);
+}
