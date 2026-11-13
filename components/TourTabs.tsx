@@ -9,7 +9,10 @@ const TABS = ["Lịch trình", "Chính sách giá", "Hướng dẫn", "Visa", "B
 
 export function TourTabs({ tour }: { tour: Tour }) {
   const [tab, setTab] = useState(0);
-  const [open, setOpen] = useState<boolean[]>(() => tour.itinerary.map((_, i) => i < 2));
+  const days = tour.itinerary.filter((d) => !d.note);
+  const notes = tour.itinerary.filter((d) => d.note);
+  // Chỉ mở ngày đầu: cả hành trình nhìn gọn trên một màn hình, muốn đọc ngày nào thì mở ngày đó
+  const [open, setOpen] = useState<boolean[]>(() => days.map((_, i) => i === 0));
   const allOpen = open.every(Boolean);
 
   return (
@@ -35,15 +38,18 @@ export function TourTabs({ tour }: { tour: Tour }) {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 0 && (
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold sm:text-xl">Lịch trình chi tiết</h2>
-              {tour.itinerary.length > 0 && (
-              <button
-                className="min-h-11 text-sm font-semibold text-brand"
-                onClick={() => setOpen(open.map(() => !allOpen))}
-              >
-                {allOpen ? "Thu gọn tất cả" : "Mở tất cả"}
-              </button>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold sm:text-xl">Lịch trình chi tiết</h2>
+                {days.length > 0 && <p className="text-[13px] text-muted">Bấm vào từng ngày để xem chi tiết</p>}
+              </div>
+              {days.length > 1 && (
+                <button
+                  className="min-h-11 shrink-0 text-sm font-semibold text-brand"
+                  onClick={() => setOpen(open.map(() => !allOpen))}
+                >
+                  {allOpen ? "Thu gọn tất cả" : "Mở tất cả"}
+                </button>
               )}
             </div>
             {tour.itinerary.length === 0 && (
@@ -56,26 +62,70 @@ export function TourTabs({ tour }: { tour: Tour }) {
                 )}
               </div>
             )}
-            {tour.itinerary.map((d, i) => (
-              <div key={d.day} className="overflow-hidden rounded-lg border border-line">
-                <button
-                  aria-expanded={open[i]}
-                  onClick={() => setOpen(open.map((v, j) => (j === i ? !v : v)))}
-                  className="flex min-h-[52px] w-full items-center gap-3 bg-n25 px-4 py-3 text-left"
-                >
-                  <span className="rounded bg-brand px-2 py-1 text-xs font-bold whitespace-nowrap text-white">NGÀY {d.day}</span>
-                  <span className="flex-1">
-                    <span className="block text-[15px] font-semibold">{d.title}</span>
-                    {d.meals && <span className="text-xs text-muted">{d.meals}</span>}
-                  </span>
-                  <Icon name="down" size={18} className={`text-muted transition-transform ${open[i] ? "rotate-180" : ""}`} />
-                </button>
-                {open[i] && (
-                  <div className="border-t border-line-soft px-4 py-3.5 text-[15px] leading-[1.75] text-ink-2">
-                    <RichText text={d.body} />
-                  </div>
-                )}
-              </div>
+            {days.length > 0 && (
+              <ol className="flex flex-col">
+                {days.map((d, i) => {
+                  const label = d.label ?? `Ngày ${d.day}`;
+                  const isOpen = open[i];
+                  return (
+                    <li key={i} className="relative pl-11">
+                      {/* Đường nối các ngày */}
+                      {i < days.length - 1 && <span aria-hidden className="absolute top-9 bottom-0 left-[15px] w-0.5 bg-sage-line" />}
+                      <span
+                        aria-hidden
+                        className={`absolute top-2.5 left-0 flex size-8 items-center justify-center rounded-full border-2 border-brand text-[13px] font-bold ${
+                          isOpen ? "bg-brand text-white" : "bg-white text-brand"
+                        }`}
+                      >
+                        {label.match(/\d+/)?.[0] ?? i + 1}
+                      </span>
+                      <button
+                        aria-expanded={isOpen}
+                        onClick={() => setOpen(open.map((v, j) => (j === i ? !v : v)))}
+                        className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-sage-soft"
+                      >
+                        <span className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="text-xs font-semibold tracking-wide text-muted uppercase">{label}</span>
+                          <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[15px] leading-snug font-semibold text-ink">
+                            {(d.stops ?? [d.title]).map((s, j) => (
+                              <span key={j} className="inline-flex items-center gap-1.5">
+                                {j > 0 && <span aria-hidden className="font-normal text-subtle">›</span>}
+                                {s}
+                              </span>
+                            ))}
+                          </span>
+                          {d.meals && (
+                            <span className="mt-0.5 self-start rounded-full bg-sage-soft px-2.5 py-0.5 text-xs font-medium text-brand">{d.meals}</span>
+                          )}
+                        </span>
+                        <Icon name="down" size={18} className={`mt-5 shrink-0 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {isOpen && (
+                        <div className="flex flex-col gap-3 px-3 pt-1 pb-5">
+                          {d.image && (
+                            <div className="aspect-[16/9] w-full max-w-[560px] overflow-hidden rounded-lg bg-n50">
+                              {/* eslint-disable-next-line @next/next/no-img-element -- ảnh từ máy chủ đối tác, không qua bộ tối ưu */}
+                              <img src={d.image} alt={`${label}: ${d.title}`} loading="lazy" className="size-full object-cover" />
+                            </div>
+                          )}
+                          <RichText text={d.body} className="max-w-[68ch] text-[15px] leading-[1.75] text-ink-2" />
+                        </div>
+                      )}
+                      {!isOpen && i < days.length - 1 && <div className="h-2" />}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+            {notes.map((n, i) => (
+              <details key={i} className="group rounded-lg border border-warn-line bg-warn-bg">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-[15px] font-semibold text-warn-ink">
+                  <Icon name="info" size={18} />
+                  <span className="flex-1">{n.label}</span>
+                  <Icon name="down" size={18} className="transition-transform group-open:rotate-180" />
+                </summary>
+                <RichText text={n.body} className="border-t border-warn-line px-4 py-3.5 text-[15px] leading-[1.75] text-ink-2" />
+              </details>
             ))}
           </div>
         )}
@@ -117,7 +167,20 @@ export function TourTabs({ tour }: { tour: Tour }) {
           </div>
         )}
 
-        {tab === 2 && (
+        {tab === 2 && tour.cancelText && (
+          <div className="flex flex-col gap-5">
+            <Box title="Điều kiện đặt cọc & hoàn / hủy" sub="(theo nhà điều hành tour)">
+              <List items={tour.cancelText} icon="right" iconClass="text-brand" />
+            </Box>
+            {tour.notes.length > 0 && (
+              <Box title="Lưu ý quan trọng">
+                <List items={tour.notes} icon="right" iconClass="text-brand" />
+              </Box>
+            )}
+          </div>
+        )}
+
+        {tab === 2 && !tour.cancelText && (
           <div className="flex flex-col gap-5">
             <div className="flex items-start gap-3 rounded-lg bg-green-50 p-4 text-[15px] leading-relaxed">
               <Icon name="info" size={20} className="mt-0.5 text-brand" />
@@ -210,8 +273,8 @@ function Box({ title, sub, titleClass, children }: { title: string; sub?: string
 function List({ items, icon, iconClass }: { items: string[]; icon: string; iconClass: string }) {
   return (
     <ul className="flex flex-col gap-2.5 text-[15px] leading-relaxed text-ink-2">
-      {items.map((x) => (
-        <li key={x} className="flex items-start gap-2.5">
+      {items.map((x, i) => (
+        <li key={i} className="flex items-start gap-2.5">
           <Icon name={icon} size={18} strokeWidth={2.2} className={`mt-0.5 ${iconClass}`} />
           <span>{x}</span>
         </li>

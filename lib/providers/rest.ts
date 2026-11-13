@@ -17,7 +17,7 @@ import "server-only";
 import { RELATED_PRODUCTS, DEFAULT_POLICY } from "@/data/tours";
 import { getConfig } from "@/lib/config";
 import { vnd } from "@/lib/format";
-import type { Departure, Tour } from "@/lib/types";
+import type { Departure, ItineraryDay, Tour } from "@/lib/types";
 import { ProviderError, type TourProvider } from "./types";
 
 /* -------------------------------------------------------------------------- */
@@ -115,6 +115,10 @@ interface NtContent {
   hight_lights?: string;
   file_upload?: NtFile[];
   file_upload_nature?: NtFile[];
+  /** Lịch trình: mỗi phần tử một ngày (đã kiểm chứng trên 71 tour) */
+  content_tour?: { title?: string; description?: string }[];
+  /** Thường 1 mục "ĐIỀU KHOẢN" gồm: bao gồm, không bao gồm, trẻ em, hoàn/hủy, visa */
+  content_conditions?: { title?: string; description?: string }[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -494,6 +498,8 @@ const NAMED_ENTITIES: Record<string, string> = {
   agrave: "à", aacute: "á", acirc: "â", atilde: "ã", egrave: "è", eacute: "é", ecirc: "ê",
   igrave: "ì", iacute: "í", ograve: "ò", oacute: "ó", ocirc: "ô", otilde: "õ",
   ugrave: "ù", uacute: "ú", yacute: "ý",
+  auml: "ä", euml: "ë", iuml: "ï", ouml: "ö", uuml: "ü", ccedil: "ç", ntilde: "ñ", szlig: "ß",
+  Auml: "Ä", Ouml: "Ö", Uuml: "Ü", deg: "°", middot: "·", laquo: "«", raquo: "»", times: "×", reg: "®", copy: "©", trade: "™",
   Agrave: "À", Aacute: "Á", Acirc: "Â", Atilde: "Ã", Egrave: "È", Eacute: "É", Ecirc: "Ê",
   Igrave: "Ì", Iacute: "Í", Ograve: "Ò", Oacute: "Ó", Ocirc: "Ô", Otilde: "Õ",
   Ugrave: "Ù", Uacute: "Ú", Yacute: "Ý",
@@ -520,6 +526,89 @@ function textLines(html: string | undefined, max = 6): string[] {
     .map((s) => s.replace(/^[\s\-–*+]+/, "").trim())
     .filter((s) => s.length > 2)
     .slice(0, max);
+}
+
+/** HTML → các dòng chữ thuần (dùng cho điều khoản) */
+function htmlLines(html: string | undefined): string[] {
+  // NFC: đối tác có chỗ lưu dấu tách rời ("A" + dấu huyền), làm hỏng so khớp "NGÀY"
+  return decodeEntities(decodeEntities(html ?? ""))
+    .normalize("NFC")
+    .replace(/<\s*(br|\/p|\/li|\/div|\/tr|\/h\d)\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .split("\n")
+    // Bỏ gạch đầu dòng nhưng giữ "**" (in đậm ở đầu dòng)
+    .map((s) => s.replace(/\s+/g, " ").replace(/^(?:[\s\-–•+·]|\*(?!\*))+/, "").trim())
+    .filter(Boolean);
+}
+
+/**
+ * Mô tả một ngày → đoạn văn cho RichText: giữ in đậm của đối tác thành **...**,
+ * mỗi đoạn <p>/<li> thành một đoạn; dòng "Lưu ý..." thành ô ghi chú ("> ").
+ */
+function dayBody(html: string | undefined): string {
+  const marked = decodeEntities(decodeEntities(html ?? ""))
+    .replace(/<img[^>]*>/gi, "")
+    // In đậm chỉ khi có chữ thật (đối tác hay in đậm cả dấu câu, ngoặc kép)
+    .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, _t, inner: string) => {
+      const t = inner.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
+      return /\p{L}{2,}/u.test(t) ? ` **${t.trim()}** ` : t;
+    });
+  return htmlLines(marked)
+    .map((l) => l.replace(/\*\*\s*\*\*/g, " ").replace(/\s+([,.;:)])/g, "$1").replace(/\s{2,}/g, " ").trim())
+    // In đậm của đối tác có khi kéo qua 2 đoạn → dòng còn lẻ một "**": bỏ dấu thừa ở cuối
+    .map((l) => ((l.match(/\*\*/g)?.length ?? 0) % 2 ? l.replace(/\*\*(?!.*\*\*)/, "") : l))
+    .filter((l) => l.replace(/\*/g, "").trim().length > 1)
+    .map((l) => (/^\**\s*(lưu ý|ghi chú|chú ý)/i.test(l) ? `> ${l}` : l))
+    .join("\n\n");
+}
+
+/** "WAT ARUN" → "Wat Arun"; giữ nguyên "TP.HCM", "VN320", "HDV" */
+function titleCase(s: string): string {
+  return s
+    .toLocaleLowerCase("vi")
+    .replace(/(^|[\s(“"'/.])(\p{L})/gu, (_, sp: string, c: string) => sp + c.toLocaleUpperCase("vi"))
+    .replace(/\b(Tp\.?\s?Hcm|Hcm|Hdv|Usa|Uae|Vn\d*|Mu\d*|Zh\d*)\b/giu, (m) => m.toUpperCase())
+    .replace(/\bTp\./g, "TP.");
+}
+
+/** "NGÀY 1: TP.HCM – BANGKOK – WAT ARUN (Ăn tối)" → nhãn, các điểm, bữa ăn */
+function mapDay(d: { title?: string; description?: string }, i: number): ItineraryDay {
+  const raw = htmlLines(d.title).join(" ");
+  const m = raw.match(/^((?:ĐÊM\s+)?(?:NGÀY|ĐÊM)\s*\d+)\s*[:.\-–]?\s*(.*)$/iu);
+  const image = decodeEntities(d.description ?? "").match(/<img[^>]+src\s*=\s*["']([^"']+)["']/i)?.[1];
+  const base = { day: i + 1, body: dayBody(d.description), image: image ? absUrl(image.replace(/ /g, "%20")) : undefined };
+  if (!m) {
+    const label = raw.toLocaleLowerCase("vi").replace(/^\p{L}/u, (c) => c.toLocaleUpperCase("vi")); // "LƯU Ý" → "Lưu ý"
+    return { ...base, label: label || "Ghi chú", title: "", note: true };
+  }
+
+  let route = m[2].trim();
+  let meals: string | undefined;
+  const paren = route.match(/\(([^()]*)\)\s*$/);
+  if (paren && /ăn|bữa|nghỉ đêm|tự túc/i.test(paren[1])) {
+    meals = paren[1].trim().replace(/^./, (c) => c.toLocaleUpperCase("vi"));
+    route = route.slice(0, paren.index).trim();
+  }
+  const stops = route.split(/\s+[-–—]\s+|\s*[–—]\s*/).map((s) => titleCase(s.trim())).filter(Boolean);
+  return { ...base, label: titleCase(m[1].replace(/\s+/g, " ")), title: stops.join(" – "), stops, meals };
+}
+
+/** Tách mục "ĐIỀU KHOẢN" thành các phần theo tiêu đề viết hoa */
+function mapConditions(list: NtContent["content_conditions"]) {
+  const out = { includes: [] as string[], excludes: [] as string[], cancel: [] as string[] };
+  let section: keyof typeof out | undefined;
+  for (const line of (list ?? []).flatMap((c) => htmlLines(c.description))) {
+    // Dòng bắt đầu bằng chữ IN HOA là tiêu đề (\p{Ll}: chữ thường; khoảng "à-ỹ" lẫn cả chữ hoa nên không dùng)
+    const head = line.match(/^([^:\p{Ll}]{4,60}):?\s*(.*)$/u);
+    if (head && /\p{Lu}{3}/u.test(head[1])) {
+      const h = head[1];
+      section = /KHÔNG BAO GỒM/u.test(h) ? "excludes" : /BAO GỒM/u.test(h) ? "includes" : /HOÀN|HỦY|HUỶ/u.test(h) ? "cancel" : undefined;
+      if (section && head[2]) out[section].push(head[2]);
+      continue;
+    }
+    if (section) out[section].push(line);
+  }
+  return out;
 }
 
 function airlineOf(flight: string | undefined, vehicle: Num): string {
@@ -603,10 +692,10 @@ function mapTour(b: NtTourBlock, calendars: NtCalendar[], categories: Map<string
       .filter((u): u is string => !!u)
       .filter((u, i, all) => all.indexOf(u) === i),
     highlights: textLines(b.hight_lights),
-    itinerary: [], // TODO(samples): lấy lịch trình theo ngày từ /content khi có dữ liệu mẫu
+    itinerary: [], // trang danh sách không cần; trang chi tiết lấy từ /content (getTourBySlug)
     programFileUrl: programFile(b),
-    includes: [], // TODO(samples)
-    excludes: [], // TODO(samples)
+    includes: [], // lấy từ /content
+    excludes: [], // lấy từ /content
     childPolicy: [
       { age: `Dưới ${infantAge} tuổi`, price: vnd(first.priceInfant), note: "Em bé" },
       { age: `Từ ${childFrom} đến dưới ${childTo} tuổi`, price: vnd(first.priceChild), note: "Trẻ em" },
@@ -697,10 +786,15 @@ async function getTourBySlug(slug: string): Promise<Tour | undefined> {
   try {
     const content = await ntGet<NtContent>(`/content/${encodeURIComponent(slug)}`);
     const highlights = textLines(content.hight_lights);
+    const terms = mapConditions(content.content_conditions);
     return {
       ...tour,
       highlights: highlights.length ? highlights : tour.highlights,
       programFileUrl: programFile(content) ?? tour.programFileUrl,
+      itinerary: (content.content_tour ?? []).map(mapDay).filter((d) => d.title || d.body),
+      includes: terms.includes,
+      excludes: terms.excludes,
+      cancelText: terms.cancel.length ? terms.cancel : undefined,
     };
   } catch (e) {
     console.warn(`[tour-rest] ${e instanceof ProviderError ? e.message : "Lỗi đọc nội dung tour"}`);

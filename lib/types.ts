@@ -31,8 +31,16 @@ export interface Departure {
 
 export interface ItineraryDay {
   day: number;
+  /** Nhãn gốc của đối tác: "Ngày 1", "Đêm 1", "Lưu ý"... Không có thì hiện "Ngày {day}" */
+  label?: string;
   title: string;
+  /** Các điểm trong lộ trình ngày, theo thứ tự (tách từ tiêu đề) */
+  stops?: string[];
   meals?: string;
+  /** Ảnh minh họa của ngày (URL đầy đủ) */
+  image?: string;
+  /** Mục ghi chú (Lưu ý, Điều khoản...) chứ không phải một ngày đi */
+  note?: boolean;
   /** Cho phép **in đậm** bằng cú pháp markdown đơn giản */
   body: string;
 }
@@ -62,6 +70,8 @@ export interface Tour {
   childPolicy: { age: string; price: string; note: string }[];
   depositPct: number;
   cancelRules: { when: string; fee: string }[];
+  /** Điều kiện cọc / hoàn / hủy nguyên văn của nhà điều hành; có thì thay cho depositPct + cancelRules */
+  cancelText?: string[];
   notes: string[];
   /** true / false khi biết chắc; để trống khi đối tác chưa cung cấp */
   visaIncluded?: boolean;
